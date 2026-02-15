@@ -18,6 +18,7 @@ function CampaignForm() {
     clientId: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchClients();
@@ -31,13 +32,16 @@ function CampaignForm() {
     try {
       const response = await clientsApi.getAll();
       setClients(response.data);
-    } catch (error) {
-      console.error('Error fetching clients:', error);
+    } catch (err) {
+      console.error('Error fetching clients:', err);
+      setError('Failed to load clients. Please refresh the page.');
     }
   };
 
   const fetchCampaign = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await campaignsApi.getById(id);
       const campaign = response.data;
       setFormData({
@@ -49,14 +53,34 @@ function CampaignForm() {
         budget: campaign.budget,
         clientId: campaign.clientId,
       });
-    } catch (error) {
-      console.error('Error fetching campaign:', error);
+    } catch (err) {
+      console.error('Error fetching campaign:', err);
+      setError('Failed to load campaign data. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!formData.name.trim()) {
+      setError('Campaign name is required');
+      return;
+    }
+    
+    if (!formData.clientId) {
+      setError('Please select a client');
+      return;
+    }
+    
+    if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
+      setError('End date must be after start date');
+      return;
+    }
+    
     setLoading(true);
+    setError(null);
 
     try {
       const data = {
@@ -65,15 +89,15 @@ function CampaignForm() {
         clientId: parseInt(formData.clientId),
       };
 
-      if (isEditMode) {
-        await campaignsApi.update(id, data);
-      } else {
-        await campaignsApi.create(data);
-      }
+      const apiCall = isEditMode
+        ? () => campaignsApi.update(id, data)
+        : () => campaignsApi.create(data);
+      
+      await apiCall();
       navigate('/campaigns');
-    } catch (error) {
-      console.error('Error saving campaign:', error);
-      alert('Failed to save campaign');
+    } catch (err) {
+      console.error('Error saving campaign:', err);
+      setError(err.response?.data?.message || 'Failed to save campaign. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -89,6 +113,11 @@ function CampaignForm() {
   return (
     <div className="form-container">
       <h1>{isEditMode ? 'Edit Campaign' : 'Add New Campaign'}</h1>
+      {error && (
+        <div className="alert alert-error" role="alert">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
           <label htmlFor="name">Name *</label>

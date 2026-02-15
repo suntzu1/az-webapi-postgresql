@@ -17,6 +17,7 @@ function ProductForm() {
     campaignId: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchCampaigns();
@@ -30,13 +31,16 @@ function ProductForm() {
     try {
       const response = await campaignsApi.getAll();
       setCampaigns(response.data);
-    } catch (error) {
-      console.error('Error fetching campaigns:', error);
+    } catch (err) {
+      console.error('Error fetching campaigns:', err);
+      setError('Failed to load campaigns. Please refresh the page.');
     }
   };
 
   const fetchProduct = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await productsApi.getById(id);
       const product = response.data;
       setFormData({
@@ -47,14 +51,29 @@ function ProductForm() {
         category: product.category,
         campaignId: product.campaignId,
       });
-    } catch (error) {
-      console.error('Error fetching product:', error);
+    } catch (err) {
+      console.error('Error fetching product:', err);
+      setError('Failed to load product data. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!formData.name.trim() || !formData.sku.trim() || !formData.category.trim()) {
+      setError('Please fill in all required fields');
+      return;
+    }
+    
+    if (!formData.campaignId) {
+      setError('Please select a campaign');
+      return;
+    }
+    
     setLoading(true);
+    setError(null);
 
     try {
       const data = {
@@ -63,15 +82,15 @@ function ProductForm() {
         campaignId: parseInt(formData.campaignId),
       };
 
-      if (isEditMode) {
-        await productsApi.update(id, data);
-      } else {
-        await productsApi.create(data);
-      }
+      const apiCall = isEditMode
+        ? () => productsApi.update(id, data)
+        : () => productsApi.create(data);
+      
+      await apiCall();
       navigate('/products');
-    } catch (error) {
-      console.error('Error saving product:', error);
-      alert('Failed to save product');
+    } catch (err) {
+      console.error('Error saving product:', err);
+      setError(err.response?.data?.message || 'Failed to save product. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -87,6 +106,11 @@ function ProductForm() {
   return (
     <div className="form-container">
       <h1>{isEditMode ? 'Edit Product' : 'Add New Product'}</h1>
+      {error && (
+        <div className="alert alert-error" role="alert">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
           <label htmlFor="name">Name *</label>
