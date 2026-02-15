@@ -1,0 +1,121 @@
+# Sports API - Sample HTTP Requests
+# Use this file with REST Client extensions in VS Code or similar tools
+
+### Variables
+@baseUrl = http://localhost:5287
+@contentType = application/json
+
+### Health Check (if implemented)
+GET {{baseUrl}}/health
+
+### Get all clients
+GET {{baseUrl}}/api/clients
+
+### Get client by ID
+GET {{baseUrl}}/api/clients/1
+
+### Create a new client - Nike
+POST {{baseUrl}}/api/clients
+Content-Type: {{contentType}}
+
+{
+  "name": "Nike",
+  "description": "Global sports brand and footwear company"
+}
+
+### Create a new client - Hurley
+POST {{baseUrl}}/api/clients
+Content-Type: {{contentType}}
+
+{
+  "name": "Hurley",
+  "description": "Premium surf and beach lifestyle brand"
+}
+
+### Update a client
+PUT {{baseUrl}}/api/clients/1
+Content-Type: {{contentType}}
+
+{
+  "name": "Nike Inc.",
+  "description": "Global leader in athletic footwear and apparel"
+}
+
+### Delete a client
+DELETE {{baseUrl}}/api/clients/999
+
+### Get all campaigns
+GET {{baseUrl}}/api/campaigns
+
+### Get campaign by ID
+GET {{baseUrl}}/api/campaigns/1
+
+### Create a new campaign
+POST {{baseUrl}}/api/campaigns
+Content-Type: {{contentType}}
+
+{
+  "name": "Summer 2026 Collection",
+  "description": "New summer sports apparel and footwear line",
+  "startDate": "2026-06-01T00:00:00Z",
+  "endDate": "2026-08-31T23:59:59Z",
+  "targetAudience": "Athletes and fitness enthusiasts aged 18-35",
+  "budget": 500000.00,
+  "clientId": 1
+}
+
+### Update a campaign
+PUT {{baseUrl}}/api/campaigns/1
+Content-Type: {{contentType}}
+
+{
+  "budget": 550000.00,
+  "endDate": "2026-09-15T23:59:59Z"
+}
+
+### Delete a campaign
+DELETE {{baseUrl}}/api/campaigns/999
+
+### Get all products
+GET {{baseUrl}}/api/products
+
+### Get product by ID
+GET {{baseUrl}}/api/products/1
+
+### Create a new product
+POST {{baseUrl}}/api/products
+Content-Type: {{contentType}}
+
+{
+  "name": "Air Max 2026",
+  "description": "Latest Air Max running shoe with enhanced cushioning",
+  "sku": "AM2026-BLK-10",
+  "price": 149.99,
+  "category": "Footwear",
+  "campaignId": 1
+}
+
+### Create another product
+POST {{baseUrl}}/api/products
+Content-Type: {{contentType}}
+
+{
+  "name": "Pro Surf Board Shorts",
+  "description": "Professional grade board shorts with quick-dry technology",
+  "sku": "HUR-PBS-001",
+  "price": 79.99,
+  "category": "Apparel",
+  "campaignId": 2
+}
+
+### Update a product
+PUT {{baseUrl}}/api/products/1
+Content-Type: {{contentType}}
+
+{
+  "price": 159.99,
+  "description": "Latest Air Max running shoe with enhanced cushioning and improved fit"
+}
+
+### Delete a product
+DELETE {{baseUrl}}/api/products/999
