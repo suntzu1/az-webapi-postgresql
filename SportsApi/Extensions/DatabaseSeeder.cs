@@ -44,8 +44,8 @@ public static class DatabaseSeeder
         {
             Name = "Summer 2026 Collection",
             Description = "New summer sports apparel and footwear line",
-            StartDate = new DateTime(2026, 6, 1),
-            EndDate = new DateTime(2026, 8, 31),
+            StartDate = new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+            EndDate = new DateTime(2026, 8, 31, 0, 0, 0, DateTimeKind.Utc),
             TargetAudience = "Athletes and fitness enthusiasts aged 18-35",
             Budget = 500000.00m,
             ClientId = nike.Id,
@@ -56,8 +56,8 @@ public static class DatabaseSeeder
         {
             Name = "Surf Championship 2026",
             Description = "Professional surf championship sponsorship campaign",
-            StartDate = new DateTime(2026, 7, 1),
-            EndDate = new DateTime(2026, 9, 30),
+            StartDate = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
+            EndDate = new DateTime(2026, 9, 30, 0, 0, 0, DateTimeKind.Utc),
             TargetAudience = "Surfers and beach lifestyle enthusiasts",
             Budget = 250000.00m,
             ClientId = hurleys.Id,
@@ -68,8 +68,8 @@ public static class DatabaseSeeder
         {
             Name = "Back to School 2026",
             Description = "Student athletic gear and sportswear campaign",
-            StartDate = new DateTime(2026, 8, 1),
-            EndDate = new DateTime(2026, 10, 31),
+            StartDate = new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc),
+            EndDate = new DateTime(2026, 10, 31, 0, 0, 0, DateTimeKind.Utc),
             TargetAudience = "Students and young athletes aged 12-22",
             Budget = 350000.00m,
             ClientId = adidas.Id,
