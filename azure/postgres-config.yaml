@@ -1,0 +1,19 @@
+# Azure PostgreSQL Flexible Server Configuration
+# This file contains the configuration for the PostgreSQL database
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+type: Opaque
+stringData:
+  connection-string: "Host=<your-postgres-server>.postgres.database.azure.com;Database=sportsapi;Username=<admin-username>;Password=<admin-password>;SslMode=Require"
+  postgres-password: "<admin-password>"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  POSTGRES_DB: sportsapi
+  POSTGRES_SERVER: "<your-postgres-server>.postgres.database.azure.com"
