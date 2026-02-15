@@ -12,6 +12,7 @@ function ClientForm() {
     description: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (isEditMode) {
@@ -22,30 +23,42 @@ function ClientForm() {
 
   const fetchClient = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await clientsApi.getById(id);
       setFormData({
         name: response.data.name,
         description: response.data.description,
       });
-    } catch (error) {
-      console.error('Error fetching client:', error);
+    } catch (err) {
+      console.error('Error fetching client:', err);
+      setError('Failed to load client data. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!formData.name.trim()) {
+      setError('Client name is required');
+      return;
+    }
+    
     setLoading(true);
+    setError(null);
 
     try {
-      if (isEditMode) {
-        await clientsApi.update(id, formData);
-      } else {
-        await clientsApi.create(formData);
-      }
+      const apiCall = isEditMode 
+        ? () => clientsApi.update(id, formData)
+        : () => clientsApi.create(formData);
+      
+      await apiCall();
       navigate('/clients');
-    } catch (error) {
-      console.error('Error saving client:', error);
-      alert('Failed to save client');
+    } catch (err) {
+      console.error('Error saving client:', err);
+      setError(err.response?.data?.message || 'Failed to save client. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -61,6 +74,11 @@ function ClientForm() {
   return (
     <div className="form-container">
       <h1>{isEditMode ? 'Edit Client' : 'Add New Client'}</h1>
+      {error && (
+        <div className="alert alert-error" role="alert">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
           <label htmlFor="name">Name *</label>

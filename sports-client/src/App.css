@@ -238,3 +238,36 @@ textarea.form-control {
   gap: 1rem;
   margin-top: 1rem;
 }
+
+/* Alert Messages */
+.alert {
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.alert-error {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+}
+
+.alert-success {
+  background-color: #efe;
+  border: 1px solid #cfc;
+  color: #3c3;
+}
+
+.alert-warning {
+  background-color: #ffc;
+  border: 1px solid #ff9;
+  color: #963;
+}
+
+.alert-info {
+  background-color: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  color: #004085;
+}
+
