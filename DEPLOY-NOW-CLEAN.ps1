@@ -8,8 +8,8 @@ Write-Host "========================================" -ForegroundColor Cyan
 
 # Configuration Variables
 $resourceGroup = "rg-campaign-manager"
-$location = "eastus2"
-$dbServerName = "campaignmanager-db"  # Fixed name - no random number
+$location = "eastus2"  # Changed to West US - often has better quota availability
+$dbServerName = "campaignmanager-db-$(Get-Random -Minimum 1000 -Maximum 9999)"
 $dbName = "campaignmanager"
 $dbAdminUser = "adminuser"
 $dbPassword = "CampaignManager2024!"  # Change this to a secure password
@@ -36,71 +36,48 @@ try {
 Write-Host "`n? Step 2: Creating Resource Group..." -ForegroundColor Green
 az group create --name $resourceGroup --location $location --output table
 
-# Create PostgreSQL Flexible Server (check if exists first)
-Write-Host "`n✅ Step 3: Checking PostgreSQL Database..." -ForegroundColor Green
-$existingDb = az postgres flexible-server show --resource-group $resourceGroup --name $dbServerName 2>$null
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "PostgreSQL server '$dbServerName' already exists - reusing" -ForegroundColor Yellow
-} else {
-    Write-Host "Creating new PostgreSQL server (this may take 3-5 minutes)..." -ForegroundColor Cyan
-    az postgres flexible-server create `
-      --resource-group $resourceGroup `
-      --name $dbServerName `
-      --location $location `
-      --admin-user $dbAdminUser `
-      --admin-password $dbPassword `
-      --sku-name Standard_B1ms `
-      --tier Burstable `
-      --version 16 `
-      --storage-size 32 `
-      --public-access 0.0.0.0 `
-      --yes
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Failed to create PostgreSQL server" -ForegroundColor Red
-        exit 1
-    }
-    Write-Host "✓ PostgreSQL server created" -ForegroundColor Green
-}
+# Create PostgreSQL Flexible Server
+Write-Host "`n? Step 3: Creating PostgreSQL Database (this may take 3-5 minutes)..." -ForegroundColor Green
+az postgres flexible-server create `
+  --resource-group $resourceGroup `
+  --name $dbServerName `
+  --location $location `
+  --admin-user $dbAdminUser `
+  --admin-password $dbPassword `
+  --sku-name Standard_B1ms `
+  --tier Burstable `
+  --version 16 `
+  --storage-size 32 `
+  --public-access 0.0.0.0 `
+  --yes
 
-# Create Database (check if exists first)
-Write-Host "`n✅ Step 4: Checking Database..." -ForegroundColor Green
-$existingDbName = az postgres flexible-server db show --resource-group $resourceGroup --server-name $dbServerName --database-name $dbName 2>$null
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "Database '$dbName' already exists - reusing" -ForegroundColor Yellow
-} else {
-    Write-Host "Creating database '$dbName'..." -ForegroundColor Cyan
-    az postgres flexible-server db create `
-      --resource-group $resourceGroup `
-      --server-name $dbServerName `
-      --database-name $dbName
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Failed to create database" -ForegroundColor Red
-        exit 1
-    }
-    Write-Host "✓ Database created" -ForegroundColor Green
-}
+# Create Database
+Write-Host "`n? Step 4: Creating Database..." -ForegroundColor Green
+az postgres flexible-server db create `
+  --resource-group $resourceGroup `
+  --server-name $dbServerName `
+  --database-name $dbName
 
 # Create App Service Plan
-Write-Host "`n✅ Step 5: Creating App Service Plan (B1 Windows)..." -ForegroundColor Green
-Write-Host "Note: Using Windows B1 for better .NET 9 deployment support (~$13/month)" -ForegroundColor Yellow
+Write-Host "`n? Step 5: Creating App Service Plan (B1 Linux)..." -ForegroundColor Green
+Write-Host "Note: F1 Free doesn't support .NET 9, using B1 (~$13/month)" -ForegroundColor Yellow
 az appservice plan create `
   --name $appServicePlan `
   --resource-group $resourceGroup `
   --location eastus `
-  --sku B1
+  --sku B1 `
+  --is-linux
 
 # Create Web App
-Write-Host "`n✅ Step 6: Creating Web App..." -ForegroundColor Green
+Write-Host "`n? Step 6: Creating Web App..." -ForegroundColor Green
 az webapp create `
   --resource-group $resourceGroup `
   --plan $appServicePlan `
   --name $apiAppName `
-  --runtime "DOTNET:9"
+  --runtime "DOTNETCORE:9.0"
 
 # Configure Connection String (as App Setting - CRITICAL!)
-Write-Host "`n✅ Step 7: Configuring Connection String..." -ForegroundColor Green
+Write-Host "`n? Step 7: Configuring Connection String..." -ForegroundColor Green
 $connectionString = "Server=$dbServerName.postgres.database.azure.com;Database=$dbName;Port=5432;User Id=$dbAdminUser;Password=$dbPassword;Ssl Mode=Require;"
 
 # Set as app setting (double underscore format for .NET configuration)
@@ -110,7 +87,7 @@ az webapp config appsettings set `
   --settings "ConnectionStrings__DefaultConnection=$connectionString"
 
 # Add firewall rule to allow Azure services to access PostgreSQL
-Write-Host "`n✅ Step 7.5: Configuring Database Firewall..." -ForegroundColor Green
+Write-Host "`n? Step 7.5: Configuring Database Firewall..." -ForegroundColor Green
 az postgres flexible-server firewall-rule create `
   --resource-group $resourceGroup `
   --name $dbServerName `
@@ -120,24 +97,24 @@ az postgres flexible-server firewall-rule create `
   --output none
 
 # Build and Publish Backend
-Write-Host "`n✅ Step 8: Building Backend API..." -ForegroundColor Green
+Write-Host "`n? Step 8: Building Backend API..." -ForegroundColor Green
 Set-Location "D:\Work\Outform\az-webapi-postgresql\SportsApi"
 dotnet publish -c Release -o ./publish --nologo
 
 # Create Deployment Package
-Write-Host "`n✅ Step 9: Creating Deployment Package..." -ForegroundColor Green
+Write-Host "`n? Step 9: Creating Deployment Package..." -ForegroundColor Green
 if (Test-Path "./deploy.zip") { Remove-Item "./deploy.zip" -Force }
 Compress-Archive -Path ./publish/* -DestinationPath ./deploy.zip -Force
 
 # Deploy to Azure using az webapp up (more reliable)
-Write-Host "`n✅ Step 10: Deploying Backend to Azure (2-3 minutes)..." -ForegroundColor Green
+Write-Host "`n? Step 10: Deploying Backend to Azure (2-3 minutes)..." -ForegroundColor Green
 az webapp up `
   --name $apiAppName `
   --resource-group $resourceGroup `
   --runtime "DOTNETCORE:9.0" `
   --os-type Linux
 
-Write-Host "`n✅ Step 11: Deployment complete! Waiting for app to start..." -ForegroundColor Green
+Write-Host "`n? Step 11: Deployment complete! Waiting for app to start..." -ForegroundColor Green
 Start-Sleep -Seconds 20
 
 # Get API URL
@@ -174,7 +151,7 @@ try {
 }
 
 # Deploy Frontend to Azure Static Web Apps
-Write-Host "`n✅ Step 15: Deploying Frontend to Azure Static Web Apps..." -ForegroundColor Green
+Write-Host "`n? Step 15: Deploying Frontend to Azure Static Web Apps..." -ForegroundColor Green
 
 # Check if any static web app exists in the resource group
 $existingStaticApps = az staticwebapp list --resource-group $resourceGroup 2>&1 | ConvertFrom-Json
@@ -188,18 +165,18 @@ if ($existingStaticApps -and $existingStaticApps.Count -gt 0) {
     az staticwebapp create --name $staticWebAppName --resource-group $resourceGroup --location "eastus2" --sku Free --output none
     
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Failed to create Static Web App" -ForegroundColor Red
+        Write-Host "? Failed to create Static Web App" -ForegroundColor Red
         exit 1
     }
-    Write-Host "✓ Static Web App created" -ForegroundColor Green
+    Write-Host "? Static Web App created" -ForegroundColor Green
 }
 
 # Get deployment token
-Write-Host "`n✅ Step 16: Deploying Frontend Build..." -ForegroundColor Green
+Write-Host "`n? Step 16: Deploying Frontend Build..." -ForegroundColor Green
 $deploymentToken = az staticwebapp secrets list --name $staticWebAppName --resource-group $resourceGroup --query "properties.apiKey" -o tsv
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Failed to get deployment token" -ForegroundColor Red
+    Write-Host "? Failed to get deployment token" -ForegroundColor Red
     exit 1
 }
 
@@ -212,7 +189,7 @@ Write-Host "Deploying frontend build to Static Web App..." -ForegroundColor Cyan
 swa deploy ./build --deployment-token $deploymentToken --env production --no-use-keychain
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "⚠️ Frontend deployment had issues (may be ok)" -ForegroundColor Yellow
+    Write-Host "?? Frontend deployment had issues (may be ok)" -ForegroundColor Yellow
 }
 
 # Get Static Web App URL
@@ -220,11 +197,11 @@ $frontendUrl = az staticwebapp show --name $staticWebAppName --resource-group $r
 $frontendUrl = "https://$frontendUrl"
 
 # Update CORS to allow frontend
-Write-Host "`n✅ Step 17: Updating CORS for Frontend URL..." -ForegroundColor Green
+Write-Host "`n? Step 17: Updating CORS for Frontend URL..." -ForegroundColor Green
 az webapp cors remove --resource-group $resourceGroup --name $apiAppName --allowed-origins "*" --output none 2>&1 | Out-Null
 az webapp cors add --resource-group $resourceGroup --name $apiAppName --allowed-origins $frontendUrl --output none
 
-Write-Host "✓ CORS updated with frontend URL" -ForegroundColor Green
+Write-Host "? CORS updated with frontend URL" -ForegroundColor Green
 
 # Success Summary
 Write-Host "`n========================================" -ForegroundColor Green
@@ -253,12 +230,12 @@ Write-Host "`n? Your backend API is now live at: $apiUrl" -ForegroundColor Green
 Write-Host "`n?? PAY-AS-YOU-GO COST MANAGEMENT:" -ForegroundColor Cyan
 Write-Host "???????????????????????????????????????????" -ForegroundColor DarkGray
 Write-Host "Current Monthly Costs:" -ForegroundColor Yellow
-Write-Host "  � App Service (B1):       ~`$13/month" -ForegroundColor Yellow
-Write-Host "  � PostgreSQL (running):   ~`$12-16/month" -ForegroundColor Yellow
-Write-Host "  � PostgreSQL (stopped):   ~`$4/month (storage only)" -ForegroundColor Green
-Write-Host "  � Static Web App:         `$0 (Free)" -ForegroundColor Green
-Write-Host "  � TOTAL (running):        ~`$25-29/month" -ForegroundColor Yellow
-Write-Host "  � TOTAL (DB stopped):     ~`$13/month" -ForegroundColor Green
+Write-Host "  ? App Service (B1):       ~`$13/month" -ForegroundColor Yellow
+Write-Host "  ? PostgreSQL (running):   ~`$12-16/month" -ForegroundColor Yellow
+Write-Host "  ? PostgreSQL (stopped):   ~`$4/month (storage only)" -ForegroundColor Green
+Write-Host "  ? Static Web App:         `$0 (Free)" -ForegroundColor Green
+Write-Host "  ? TOTAL (running):        ~`$25-29/month" -ForegroundColor Yellow
+Write-Host "  ? TOTAL (DB stopped):     ~`$13/month" -ForegroundColor Green
 Write-Host "???????????????????????????????????????????" -ForegroundColor DarkGray
 
 Write-Host "`n?? SAVE MONEY - STOP DATABASE WHEN NOT USING:" -ForegroundColor Cyan
