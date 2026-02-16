@@ -92,6 +92,44 @@ body {
   color: #2c3e50;
 }
 
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Filter Select */
+.filter-select {
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.3s;
+  min-width: 200px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.filter-select:hover {
+  border-color: #95a5a6;
+}
+
+/* Filter Info Banner */
+.filter-info {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+  color: #1976d2;
+  font-size: 0.95rem;
+}
+
 /* Buttons */
 .btn {
   padding: 0.6rem 1.2rem;
@@ -238,6 +276,184 @@ textarea.form-control {
   gap: 1rem;
   margin-top: 1rem;
 }
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 4px;
+}
+
+.badge-primary {
+  background-color: #667eea;
+  color: white;
+}
+
+.badge-info {
+  background-color: #4facfe;
+  color: white;
+}
+
+.badge-success {
+  background-color: #00d2ff;
+  color: white;
+}
+
+/* Code formatting for SKU */
+code {
+  background-color: #f4f4f4;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #d63384;
+}
+
+/* Strong text */
+strong {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Alerts */
+.alert {
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.alert-error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.alert-success {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.alert-info {
+  color: #004085;
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
+
+/* Form helper text */
+.form-text {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+
+/* Client Selected Banner */
+.client-selected-banner {
+  background-color: #d4edda;
+  border-left: 4px solid #28a745;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+  color: #155724;
+  font-size: 0.95rem;
+}
+
+/* Required Indicator */
+.required-indicator {
+  color: #dc3545;
+  font-size: 0.85rem;
+  font-weight: normal;
+  margin-left: 0.5rem;
+  background-color: #f8d7da;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+}
+
+/* Disabled Select */
+select.form-control:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Product Selection */
+.products-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.product-checkbox-item {
+  background-color: white;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  padding: 1rem;
+  transition: all 0.2s;
+}
+
+.product-checkbox-item:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  cursor: pointer;
+  margin: 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-top: 0.25rem;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.product-info strong {
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.product-details {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+
+
+
 
 /* Alert Messages */
 .alert {

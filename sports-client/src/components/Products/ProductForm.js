@@ -1,39 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { productsApi, campaignsApi } from '../../services/api';
+import { productsApi, clientsApi } from '../../services/api';
 
 function ProductForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = Boolean(id);
 
-  const [campaigns, setCampaigns] = useState([]);
+  const [clients, setClients] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     sku: '',
     price: '',
     category: '',
-    campaignId: '',
+    clientId: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchCampaigns();
+    fetchData();
     if (isEditMode) {
       fetchProduct();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const fetchCampaigns = async () => {
+  const fetchData = async () => {
     try {
-      const response = await campaignsApi.getAll();
-      setCampaigns(response.data);
+      const clientsRes = await clientsApi.getAll();
+      setClients(clientsRes.data);
     } catch (err) {
-      console.error('Error fetching campaigns:', err);
-      setError('Failed to load campaigns. Please refresh the page.');
+      console.error('Error fetching data:', err);
+      setError('Failed to load data. Please refresh the page.');
     }
   };
 
@@ -45,11 +45,11 @@ function ProductForm() {
       const product = response.data;
       setFormData({
         name: product.name,
-        description: product.description,
+        description: product.description || '',
         sku: product.sku,
         price: product.price,
         category: product.category,
-        campaignId: product.campaignId,
+        clientId: product.clientId,
       });
     } catch (err) {
       console.error('Error fetching product:', err);
@@ -62,13 +62,13 @@ function ProductForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.name.trim() || !formData.sku.trim() || !formData.category.trim()) {
-      setError('Please fill in all required fields');
+    if (!formData.clientId) {
+      setError('Please select a client');
       return;
     }
     
-    if (!formData.campaignId) {
-      setError('Please select a campaign');
+    if (!formData.name.trim() || !formData.sku.trim() || !formData.category.trim()) {
+      setError('Please fill in all required fields');
       return;
     }
     
@@ -79,7 +79,7 @@ function ProductForm() {
       const data = {
         ...formData,
         price: parseFloat(formData.price),
-        campaignId: parseInt(formData.campaignId),
+        clientId: parseInt(formData.clientId),
       };
 
       const apiCall = isEditMode
@@ -103,6 +103,8 @@ function ProductForm() {
     });
   };
 
+  const selectedClient = clients.find(c => c.id === parseInt(formData.clientId));
+
   return (
     <div className="form-container">
       <h1>{isEditMode ? 'Edit Product' : 'Add New Product'}</h1>
@@ -112,6 +114,46 @@ function ProductForm() {
         </div>
       )}
       <form onSubmit={handleSubmit} className="form">
+        <div className="alert alert-info">
+          <strong>?? Product Ownership:</strong> Products belong directly to clients. 
+          You can assign products to marketing campaigns later.
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="clientId">
+            Client * 
+            <span className="required-indicator">Required</span>
+          </label>
+          <select
+            id="clientId"
+            name="clientId"
+            value={formData.clientId}
+            onChange={handleChange}
+            required
+            className="form-control"
+          >
+            <option value="">-- Select Client --</option>
+            {clients.map(client => (
+              <option key={client.id} value={client.id}>
+                {client.name} ({client.productCount} {client.productCount === 1 ? 'product' : 'products'})
+              </option>
+            ))}
+          </select>
+          <small className="form-text">
+            This product will belong to this client
+          </small>
+        </div>
+
+        {selectedClient && (
+          <div className="client-selected-banner">
+            ? Creating product for: <strong>{selectedClient.name}</strong>
+          </div>
+        )}
+
+        <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #ddd' }} />
+
+        <h3 style={{ marginBottom: '1.5rem', color: '#2c3e50' }}>Product Details</h3>
+
         <div className="form-group">
           <label htmlFor="name">Name *</label>
           <input
@@ -122,6 +164,7 @@ function ProductForm() {
             onChange={handleChange}
             required
             className="form-control"
+            placeholder="e.g., Air Max 2026"
           />
         </div>
 
@@ -135,6 +178,7 @@ function ProductForm() {
             onChange={handleChange}
             required
             className="form-control"
+            placeholder="e.g., AM2026-BLK-10"
           />
         </div>
 
@@ -149,6 +193,7 @@ function ProductForm() {
               onChange={handleChange}
               required
               className="form-control"
+              placeholder="e.g., Footwear, Apparel"
             />
           </div>
 
@@ -164,27 +209,9 @@ function ProductForm() {
               min="0"
               required
               className="form-control"
+              placeholder="0.00"
             />
           </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="campaignId">Campaign *</label>
-          <select
-            id="campaignId"
-            name="campaignId"
-            value={formData.campaignId}
-            onChange={handleChange}
-            required
-            className="form-control"
-          >
-            <option value="">Select a campaign</option>
-            {campaigns.map(campaign => (
-              <option key={campaign.id} value={campaign.id}>
-                {campaign.name}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div className="form-group">
@@ -196,11 +223,12 @@ function ProductForm() {
             onChange={handleChange}
             rows="4"
             className="form-control"
+            placeholder="Enter product description..."
           />
         </div>
 
         <div className="form-actions">
-          <button type="submit" disabled={loading} className="btn btn-primary">
+          <button type="submit" disabled={loading || !formData.clientId} className="btn btn-primary">
             {loading ? 'Saving...' : isEditMode ? 'Update Product' : 'Create Product'}
           </button>
           <button 

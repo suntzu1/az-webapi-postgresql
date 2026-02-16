@@ -11,9 +11,10 @@ public class Product
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     
-    // Foreign key
-    public int CampaignId { get; set; }
+    // Foreign key - Product belongs to Client
+    public int ClientId { get; set; }
     
-    // Navigation property
-    public Campaign Campaign { get; set; } = null!;
+    // Navigation properties
+    public Client Client { get; set; } = null!;
+    public ICollection<CampaignProduct> CampaignProducts { get; set; } = new List<CampaignProduct>();
 }

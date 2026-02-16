@@ -11,6 +11,7 @@ public class CampaignDto
     public decimal? Budget { get; set; }
     public int ClientId { get; set; }
     public string ClientName { get; set; } = string.Empty;
+    public int ProductCount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }
@@ -24,6 +25,7 @@ public class CreateCampaignDto
     public string? TargetAudience { get; set; }
     public decimal? Budget { get; set; }
     public int ClientId { get; set; }
+    public List<int> ProductIds { get; set; } = new List<int>();
 }
 
 public class UpdateCampaignDto

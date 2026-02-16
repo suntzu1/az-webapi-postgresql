@@ -23,11 +23,15 @@ public class ClientsController : ControllerBase
     public async Task<ActionResult<IEnumerable<ClientDto>>> GetClients()
     {
         var clients = await _context.Clients
+            .Include(c => c.Campaigns)
+            .Include(c => c.Products)
             .Select(c => new ClientDto
             {
                 Id = c.Id,
                 Name = c.Name,
                 Description = c.Description,
+                CampaignCount = c.Campaigns.Count,
+                ProductCount = c.Products.Count,
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt
             })
@@ -40,12 +44,16 @@ public class ClientsController : ControllerBase
     public async Task<ActionResult<ClientDto>> GetClient(int id)
     {
         var client = await _context.Clients
+            .Include(c => c.Campaigns)
+            .Include(c => c.Products)
             .Where(c => c.Id == id)
             .Select(c => new ClientDto
             {
                 Id = c.Id,
                 Name = c.Name,
                 Description = c.Description,
+                CampaignCount = c.Campaigns.Count,
+                ProductCount = c.Products.Count,
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt
             })

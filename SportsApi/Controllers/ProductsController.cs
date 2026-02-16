@@ -23,7 +23,9 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts()
     {
         var products = await _context.Products
-            .Include(p => p.Campaign)
+            .Include(p => p.Client)
+            .Include(p => p.CampaignProducts)
+                .ThenInclude(cp => cp.Campaign)
             .Select(p => new ProductDto
             {
                 Id = p.Id,
@@ -32,8 +34,9 @@ public class ProductsController : ControllerBase
                 Sku = p.Sku,
                 Price = p.Price,
                 Category = p.Category,
-                CampaignId = p.CampaignId,
-                CampaignName = p.Campaign.Name,
+                ClientId = p.ClientId,
+                ClientName = p.Client.Name,
+                CampaignNames = p.CampaignProducts.Select(cp => cp.Campaign.Name).ToList(),
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
             })
@@ -46,7 +49,9 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<ProductDto>> GetProduct(int id)
     {
         var product = await _context.Products
-            .Include(p => p.Campaign)
+            .Include(p => p.Client)
+            .Include(p => p.CampaignProducts)
+                .ThenInclude(cp => cp.Campaign)
             .Where(p => p.Id == id)
             .Select(p => new ProductDto
             {
@@ -56,8 +61,9 @@ public class ProductsController : ControllerBase
                 Sku = p.Sku,
                 Price = p.Price,
                 Category = p.Category,
-                CampaignId = p.CampaignId,
-                CampaignName = p.Campaign.Name,
+                ClientId = p.ClientId,
+                ClientName = p.Client.Name,
+                CampaignNames = p.CampaignProducts.Select(cp => cp.Campaign.Name).ToList(),
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
             })
@@ -74,9 +80,9 @@ public class ProductsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto dto)
     {
-        if (!await _context.Campaigns.AnyAsync(c => c.Id == dto.CampaignId))
+        if (!await _context.Clients.AnyAsync(c => c.Id == dto.ClientId))
         {
-            return BadRequest("Campaign not found");
+            return BadRequest("Client not found");
         }
 
         var product = new Product
@@ -86,7 +92,7 @@ public class ProductsController : ControllerBase
             Sku = dto.Sku,
             Price = dto.Price,
             Category = dto.Category,
-            CampaignId = dto.CampaignId,
+            ClientId = dto.ClientId,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -94,7 +100,9 @@ public class ProductsController : ControllerBase
         await _context.SaveChangesAsync();
 
         var productDto = await _context.Products
-            .Include(p => p.Campaign)
+            .Include(p => p.Client)
+            .Include(p => p.CampaignProducts)
+                .ThenInclude(cp => cp.Campaign)
             .Where(p => p.Id == product.Id)
             .Select(p => new ProductDto
             {
@@ -104,8 +112,9 @@ public class ProductsController : ControllerBase
                 Sku = p.Sku,
                 Price = p.Price,
                 Category = p.Category,
-                CampaignId = p.CampaignId,
-                CampaignName = p.Campaign.Name,
+                ClientId = p.ClientId,
+                ClientName = p.Client.Name,
+                CampaignNames = p.CampaignProducts.Select(cp => cp.Campaign.Name).ToList(),
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
             })
@@ -151,18 +160,7 @@ public class ProductsController : ControllerBase
 
         product.UpdatedAt = DateTime.UtcNow;
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!await ProductExists(id))
-            {
-                return NotFound();
-            }
-            throw;
-        }
+        await _context.SaveChangesAsync();
 
         return NoContent();
     }
@@ -171,6 +169,7 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> DeleteProduct(int id)
     {
         var product = await _context.Products.FindAsync(id);
+
         if (product == null)
         {
             return NotFound();
@@ -180,10 +179,5 @@ public class ProductsController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
-    }
-
-    private async Task<bool> ProductExists(int id)
-    {
-        return await _context.Products.AnyAsync(e => e.Id == id);
     }
 }

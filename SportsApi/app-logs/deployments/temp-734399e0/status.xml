@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>temp-734399e0</id>
+  <author>Deploying from pushed zip file</author>
+  <deployer>Push-Deployer</deployer>
+  <authorEmail>N/A</authorEmail>
+  <message>N/A</message>
+  <progress>Fetching changes.</progress>
+  <status>Pending</status>
+  <statusText>Receiving changes.</statusText>
+  <lastSuccessEndTime />
+  <receivedTime>2026-02-16T01:01:45.3919318Z</receivedTime>
+  <startTime>2026-02-16T01:01:45.3919318Z</startTime>
+  <endTime />
+  <complete>False</complete>
+  <is_temp>True</is_temp>
+  <is_readonly>False</is_readonly>
+  <containerId>6dfd0cec6d22</containerId>
+  <buildSummary />
+</deployment>

@@ -63,9 +63,37 @@ namespace SportsApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("IX_Campaigns_ClientId");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Campaigns_CreatedAt");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_Campaigns_Name");
+
+                    b.HasIndex("StartDate", "EndDate")
+                        .HasDatabaseName("IX_Campaigns_DateRange");
 
                     b.ToTable("Campaigns");
+                });
+
+            modelBuilder.Entity("SportsApi.Models.CampaignProduct", b =>
+                {
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CampaignId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("CampaignProducts");
                 });
 
             modelBuilder.Entity("SportsApi.Models.Client", b =>
@@ -93,6 +121,12 @@ namespace SportsApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Clients_CreatedAt");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_Clients_Name");
+
                     b.ToTable("Clients");
                 });
 
@@ -104,12 +138,12 @@ namespace SportsApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CampaignId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Category")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -135,7 +169,21 @@ namespace SportsApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CampaignId");
+                    b.HasIndex("Category")
+                        .HasDatabaseName("IX_Products_Category");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("IX_Products_ClientId");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Products_CreatedAt");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_Products_Name");
+
+                    b.HasIndex("Sku")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Products_Sku");
 
                     b.ToTable("Products");
                 });
@@ -151,25 +199,51 @@ namespace SportsApi.Migrations
                     b.Navigation("Client");
                 });
 
-            modelBuilder.Entity("SportsApi.Models.Product", b =>
+            modelBuilder.Entity("SportsApi.Models.CampaignProduct", b =>
                 {
                     b.HasOne("SportsApi.Models.Campaign", "Campaign")
-                        .WithMany("Products")
+                        .WithMany("CampaignProducts")
                         .HasForeignKey("CampaignId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SportsApi.Models.Product", "Product")
+                        .WithMany("CampaignProducts")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Campaign");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("SportsApi.Models.Product", b =>
+                {
+                    b.HasOne("SportsApi.Models.Client", "Client")
+                        .WithMany("Products")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
                 });
 
             modelBuilder.Entity("SportsApi.Models.Campaign", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("CampaignProducts");
                 });
 
             modelBuilder.Entity("SportsApi.Models.Client", b =>
                 {
                     b.Navigation("Campaigns");
+
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("SportsApi.Models.Product", b =>
+                {
+                    b.Navigation("CampaignProducts");
                 });
 #pragma warning restore 612, 618
         }

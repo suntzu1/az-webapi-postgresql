@@ -8,8 +8,9 @@ public class ProductDto
     public string? Sku { get; set; }
     public decimal? Price { get; set; }
     public string? Category { get; set; }
-    public int CampaignId { get; set; }
-    public string CampaignName { get; set; } = string.Empty;
+    public int ClientId { get; set; }
+    public string ClientName { get; set; } = string.Empty;
+    public List<string> CampaignNames { get; set; } = new List<string>();
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }
@@ -21,7 +22,7 @@ public class CreateProductDto
     public string? Sku { get; set; }
     public decimal? Price { get; set; }
     public string? Category { get; set; }
-    public int CampaignId { get; set; }
+    public int ClientId { get; set; }
 }
 
 public class UpdateProductDto
@@ -32,3 +33,4 @@ public class UpdateProductDto
     public decimal? Price { get; set; }
     public string? Category { get; set; }
 }
+

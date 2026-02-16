@@ -1,0 +1,19 @@
+<step title="BackgroundTrace" date="2026-02-16T01:01:44.245" instance="582035" url="/api/zipdeploy" method="POST" >
+  <step title="Cleanup Xml Logs" date="2026-02-16T01:01:44.286" /><!-- duration: 126ms -->
+  <step title="Creating temporary deployment - FetchDeploymentManager" date="2026-02-16T01:01:45.173" /><!-- duration: 30ms -->
+  <step title="Creating temporary deployment" date="2026-02-16T01:01:45.245" /><!-- duration: 512ms -->
+  <step title="Performing fetch based deployment" date="2026-02-16T01:01:46.767" >
+    <step title="Cleaning up temp folders from previous zip deployments and extracting pushed zip file /tmp/zipdeploy/bc79e79c-0e6f-4fe0-b6fc-f63d16c47db5.zip (5.07 MB) to /tmp/zipdeploy/extracted" date="2026-02-16T01:01:48.600" >
+      <step title="ChmodRecursive Process exited with total time taken in ms: 129" date="2026-02-16T01:01:50.621" /><!-- duration: 59ms -->
+    </step><!-- duration: 2130ms -->
+    <step title="Deployment timer started" date="2026-02-16T01:01:52.836" >
+      <step title="DeploymentManager.Deploy(id:39aae231-fb43-4cbb-8572-61318bbca114)" date="2026-02-16T01:01:52.901" >
+        <step title="Collecting changeset information" date="2026-02-16T01:01:53.117" /><!-- duration: 509ms -->
+        <step title="Updating submodules" date="2026-02-16T01:01:53.679" /><!-- duration: 1481ms -->
+        <step title="Determining deployment builder" date="2026-02-16T01:01:58.933" >
+          <step title="Builder is BasicBuilder" date="2026-02-16T01:01:59.071" /><!-- duration: 24ms -->
+        </step><!-- duration: 231ms -->
+        <step title="PreDeployment: context.CleanOutputPath False" date="2026-02-16T01:01:59.618" >
+          <step title="PreDeployment: context.OutputPath /home/site/wwwroot" date="2026-02-16T01:02:00.819" >
+            <step title="Building" date="2026-02-16T01:02:02.331" >
+              <step title="Executing external process" date="2026-02-16T01:02:15.158" type="process" path="starter.sh" arguments="/opt/Kudu/Scripts/parallel_rsync.sh /tmp/zipdeploy/extracted /home/site/wwwroot 8 /tmp/ False True  " 

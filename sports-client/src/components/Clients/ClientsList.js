@@ -51,6 +51,8 @@ function ClientsList() {
               <th>ID</th>
               <th>Name</th>
               <th>Description</th>
+              <th>Products</th>
+              <th>Campaigns</th>
               <th>Created At</th>
               <th>Actions</th>
             </tr>
@@ -59,8 +61,18 @@ function ClientsList() {
             {clients.map(client => (
               <tr key={client.id}>
                 <td>{client.id}</td>
-                <td>{client.name}</td>
+                <td><strong>{client.name}</strong></td>
                 <td>{client.description}</td>
+                <td>
+                  <span className="badge badge-primary">
+                    {client.productCount} {client.productCount === 1 ? 'product' : 'products'}
+                  </span>
+                </td>
+                <td>
+                  <span className="badge badge-info">
+                    {client.campaignCount} {client.campaignCount === 1 ? 'campaign' : 'campaigns'}
+                  </span>
+                </td>
                 <td>{new Date(client.createdAt).toLocaleDateString()}</td>
                 <td>
                   <Link to={`/clients/edit/${client.id}`} className="btn btn-sm btn-secondary">

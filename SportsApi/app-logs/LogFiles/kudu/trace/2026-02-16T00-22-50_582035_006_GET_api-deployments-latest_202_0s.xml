@@ -1,0 +1,9 @@
+<step title="Incoming Request" date="2026-02-16T00:22:50.890" instance="582035" url="/api/deployments/latest" method="GET" type="request" pid="833,1,7" Accept="*/*" Host="campaignmanager-api-2413.scm.azurewebsites.net" User-Agent="AZURECLI/2.53.0 (MSI)" Accept-Encoding="gzip, deflate" Authorization="Bas..." x-ms-client-request-id="982bea3d-0acd-11f1-abf8-bcf171acf0a2" X-ARR-LOG-ID="982bea3d-0acd-11f1-abf8-bcf171acf0a2" CLIENT-IP="8.26.71.170:39526" X-SITE-DEPLOYMENT-ID="campaignmanager-api-2413" WAS-DEFAULT-HOSTNAME="campaignmanager-api-2413.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/deployments/latest" X-Client-IP="8.26.71.170" X-Client-Port="39526" >
+  <step title="Cleanup Xml Logs" date="2026-02-16T00:22:50.895" /><!-- duration: 11ms -->
+  <step title="DeploymentService.GetResult" date="2026-02-16T00:22:50.962" >
+    <step title="DeploymentService.GetLatestDeployment" date="2026-02-16T00:22:50.975" >
+      <step title="DeploymentManager.GetResults" date="2026-02-16T00:22:50.982" /><!-- duration: 262ms -->
+    </step><!-- duration: 281ms -->
+  </step><!-- duration: 301ms -->
+  <step title="Outgoing response" date="2026-02-16T00:22:51.276" type="response" statusCode="202" statusText="Accepted" /><!-- duration: 13ms -->
+</step><!-- duration: 410ms -->

@@ -19,7 +19,7 @@ function App() {
           <div className="nav-container">
             <Link to="/" className="nav-logo">
               <FontAwesomeIcon icon={faTrophy} style={{ marginRight: '10px' }} />
-              Sports API Manager
+              Client Campaign Manager
             </Link>
             <ul className="nav-menu">
               <li className="nav-item">

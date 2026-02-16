@@ -1,7 +1,7 @@
 {
-  "name": "sports-client",
-  "version": "0.1.0",
-  "private": true,
+"name": "client-campaign-manager",
+"version": "0.1.0",
+"private": true,
   "proxy": "http://localhost:5287",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",

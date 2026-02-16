@@ -17,5 +17,5 @@ public class Campaign
     
     // Navigation properties
     public Client Client { get; set; } = null!;
-    public ICollection<Product> Products { get; set; } = new List<Product>();
+    public ICollection<CampaignProduct> CampaignProducts { get; set; } = new List<CampaignProduct>();
 }

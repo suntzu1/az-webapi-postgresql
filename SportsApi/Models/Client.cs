@@ -8,6 +8,7 @@ public class Client
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     
-    // Navigation property
+    // Navigation properties
     public ICollection<Campaign> Campaigns { get; set; } = new List<Campaign>();
+    public ICollection<Product> Products { get; set; } = new List<Product>();
 }

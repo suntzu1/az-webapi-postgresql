@@ -24,6 +24,7 @@ public class CampaignsController : ControllerBase
     {
         var campaigns = await _context.Campaigns
             .Include(c => c.Client)
+            .Include(c => c.CampaignProducts)
             .Select(c => new CampaignDto
             {
                 Id = c.Id,
@@ -35,6 +36,7 @@ public class CampaignsController : ControllerBase
                 Budget = c.Budget,
                 ClientId = c.ClientId,
                 ClientName = c.Client.Name,
+                ProductCount = c.CampaignProducts.Count,
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt
             })
@@ -81,12 +83,25 @@ public class CampaignsController : ControllerBase
             return BadRequest("Client not found");
         }
 
+        // Validate that all products belong to the selected client
+        if (dto.ProductIds.Any())
+        {
+            var invalidProducts = await _context.Products
+                .Where(p => dto.ProductIds.Contains(p.Id) && p.ClientId != dto.ClientId)
+                .AnyAsync();
+
+            if (invalidProducts)
+            {
+                return BadRequest("All products must belong to the selected client");
+            }
+        }
+
         var campaign = new Campaign
         {
             Name = dto.Name,
             Description = dto.Description,
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate,
+            StartDate = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc),
+            EndDate = DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc),
             TargetAudience = dto.TargetAudience,
             Budget = dto.Budget,
             ClientId = dto.ClientId,
@@ -96,8 +111,23 @@ public class CampaignsController : ControllerBase
         _context.Campaigns.Add(campaign);
         await _context.SaveChangesAsync();
 
+        // Create CampaignProduct relationships
+        if (dto.ProductIds.Any())
+        {
+            var campaignProducts = dto.ProductIds.Select(productId => new CampaignProduct
+            {
+                CampaignId = campaign.Id,
+                ProductId = productId,
+                AddedAt = DateTime.UtcNow
+            }).ToList();
+
+            _context.CampaignProducts.AddRange(campaignProducts);
+            await _context.SaveChangesAsync();
+        }
+
         var campaignDto = await _context.Campaigns
             .Include(c => c.Client)
+            .Include(c => c.CampaignProducts)
             .Where(c => c.Id == campaign.Id)
             .Select(c => new CampaignDto
             {
@@ -110,6 +140,7 @@ public class CampaignsController : ControllerBase
                 Budget = c.Budget,
                 ClientId = c.ClientId,
                 ClientName = c.Client.Name,
+                ProductCount = c.CampaignProducts.Count,
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt
             })
@@ -140,12 +171,12 @@ public class CampaignsController : ControllerBase
 
         if (dto.StartDate.HasValue)
         {
-            campaign.StartDate = dto.StartDate.Value;
+            campaign.StartDate = DateTime.SpecifyKind(dto.StartDate.Value, DateTimeKind.Utc);
         }
 
         if (dto.EndDate.HasValue)
         {
-            campaign.EndDate = dto.EndDate.Value;
+            campaign.EndDate = DateTime.SpecifyKind(dto.EndDate.Value, DateTimeKind.Utc);
         }
 
         if (dto.TargetAudience != null)

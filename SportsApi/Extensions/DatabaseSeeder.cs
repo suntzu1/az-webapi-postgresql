@@ -79,7 +79,7 @@ public static class DatabaseSeeder
         context.Campaigns.AddRange(nikeSummerCampaign, hurleySurfCampaign, adidasBackToSchool);
         await context.SaveChangesAsync();
 
-        // Create Products
+        // Create Products (belong directly to clients)
         var products = new List<Product>
         {
             // Nike Products
@@ -90,7 +90,7 @@ public static class DatabaseSeeder
                 Sku = "AM2026-BLK-10",
                 Price = 149.99m,
                 Category = "Footwear",
-                CampaignId = nikeSummerCampaign.Id,
+                ClientId = nike.Id,
                 CreatedAt = DateTime.UtcNow
             },
             new Product
@@ -100,7 +100,7 @@ public static class DatabaseSeeder
                 Sku = "DFPT-WHT-L",
                 Price = 45.99m,
                 Category = "Apparel",
-                CampaignId = nikeSummerCampaign.Id,
+                ClientId = nike.Id,
                 CreatedAt = DateTime.UtcNow
             },
             new Product
@@ -110,7 +110,7 @@ public static class DatabaseSeeder
                 Sku = "NPC-BLK-M",
                 Price = 39.99m,
                 Category = "Apparel",
-                CampaignId = nikeSummerCampaign.Id,
+                ClientId = nike.Id,
                 CreatedAt = DateTime.UtcNow
             },
             
@@ -122,7 +122,7 @@ public static class DatabaseSeeder
                 Sku = "HUR-PBS-001",
                 Price = 79.99m,
                 Category = "Apparel",
-                CampaignId = hurleySurfCampaign.Id,
+                ClientId = hurleys.Id,
                 CreatedAt = DateTime.UtcNow
             },
             new Product
@@ -132,7 +132,7 @@ public static class DatabaseSeeder
                 Sku = "HUR-PEW-L",
                 Price = 299.99m,
                 Category = "Surf Gear",
-                CampaignId = hurleySurfCampaign.Id,
+                ClientId = hurleys.Id,
                 CreatedAt = DateTime.UtcNow
             },
             
@@ -144,7 +144,7 @@ public static class DatabaseSeeder
                 Sku = "UB2026-GRY-9",
                 Price = 180.00m,
                 Category = "Footwear",
-                CampaignId = adidasBackToSchool.Id,
+                ClientId = adidas.Id,
                 CreatedAt = DateTime.UtcNow
             },
             new Product
@@ -154,7 +154,7 @@ public static class DatabaseSeeder
                 Sku = "TTP-BLK-M",
                 Price = 55.00m,
                 Category = "Apparel",
-                CampaignId = adidasBackToSchool.Id,
+                ClientId = adidas.Id,
                 CreatedAt = DateTime.UtcNow
             },
             new Product
@@ -164,12 +164,33 @@ public static class DatabaseSeeder
                 Sku = "ABP-NVY-001",
                 Price = 45.00m,
                 Category = "Accessories",
-                CampaignId = adidasBackToSchool.Id,
+                ClientId = adidas.Id,
                 CreatedAt = DateTime.UtcNow
             }
         };
 
         context.Products.AddRange(products);
+        await context.SaveChangesAsync();
+        
+        // Link Products to Campaigns (many-to-many)
+        var campaignProducts = new List<CampaignProduct>
+        {
+            // Nike Summer Campaign products
+            new CampaignProduct { CampaignId = nikeSummerCampaign.Id, ProductId = products[0].Id, AddedAt = DateTime.UtcNow },
+            new CampaignProduct { CampaignId = nikeSummerCampaign.Id, ProductId = products[1].Id, AddedAt = DateTime.UtcNow },
+            new CampaignProduct { CampaignId = nikeSummerCampaign.Id, ProductId = products[2].Id, AddedAt = DateTime.UtcNow },
+            
+            // Hurley Surf Campaign products
+            new CampaignProduct { CampaignId = hurleySurfCampaign.Id, ProductId = products[3].Id, AddedAt = DateTime.UtcNow },
+            new CampaignProduct { CampaignId = hurleySurfCampaign.Id, ProductId = products[4].Id, AddedAt = DateTime.UtcNow },
+            
+            // Adidas Back to School Campaign products
+            new CampaignProduct { CampaignId = adidasBackToSchool.Id, ProductId = products[5].Id, AddedAt = DateTime.UtcNow },
+            new CampaignProduct { CampaignId = adidasBackToSchool.Id, ProductId = products[6].Id, AddedAt = DateTime.UtcNow },
+            new CampaignProduct { CampaignId = adidasBackToSchool.Id, ProductId = products[7].Id, AddedAt = DateTime.UtcNow },
+        };
+        
+        context.CampaignProducts.AddRange(campaignProducts);
         await context.SaveChangesAsync();
     }
 }
