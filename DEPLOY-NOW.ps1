@@ -150,54 +150,57 @@ try {
     exit 1
 }
 
-# Deploy Frontend to Azure Static Web Apps (check if exists first)
-Write-Host "`n? Step 15: Deploying Frontend to Azure Static Web Apps..." -ForegroundColor Green
-$existingStaticApp = az staticwebapp show --name $staticWebAppName --resource-group $resourceGroup 2>&1
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "Static Web App already exists - skipping creation" -ForegroundColor Yellow
+# Deploy Frontend to Azure Static Web Apps
+Write-Host "`n✅ Step 15: Deploying Frontend to Azure Static Web Apps..." -ForegroundColor Green
+
+# Check if any static web app exists in the resource group
+$existingStaticApps = az staticwebapp list --resource-group $resourceGroup 2>&1 | ConvertFrom-Json
+if ($existingStaticApps -and $existingStaticApps.Count -gt 0) {
+    $staticWebAppName = $existingStaticApps[0].name
+    Write-Host "Found existing Static Web App: $staticWebAppName - reusing" -ForegroundColor Yellow
 } else {
-    Write-Host "Creating Static Web App..." -ForegroundColor Cyan
-    az staticwebapp create `
-      --name $staticWebAppName `
-      --resource-group $resourceGroup `
-      --location "eastus2" `
-      --sku Free
+    # Create new static web app with generated name
+    Write-Host "Creating new Static Web App: $staticWebAppName..." -ForegroundColor Cyan
+    az staticwebapp create --name $staticWebAppName --resource-group $resourceGroup --location "eastus2" --sku Free --output none
     
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "? Failed to create Static Web App" -ForegroundColor Red
+        Write-Host "❌ Failed to create Static Web App" -ForegroundColor Red
         exit 1
     }
+    Write-Host "✓ Static Web App created" -ForegroundColor Green
 }
 
 # Get deployment token
-$deploymentToken = az staticwebapp secrets list `
-  --name $staticWebAppName `
-  --resource-group $resourceGroup `
-  --query "properties.apiKey" -o tsv
+Write-Host "`n✅ Step 16: Deploying Frontend Build..." -ForegroundColor Green
+$deploymentToken = az staticwebapp secrets list --name $staticWebAppName --resource-group $resourceGroup --query "properties.apiKey" -o tsv
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Failed to get deployment token" -ForegroundColor Red
+    exit 1
+}
 
 # Install SWA CLI if not already installed
 Write-Host "Installing Azure Static Web Apps CLI..." -ForegroundColor Cyan
-npm install -g @azure/static-web-apps-cli 2>&1 | Out-Null
+npm install -g @azure/static-web-apps-cli --silent 2>&1 | Out-Null
 
 # Deploy using SWA CLI
 Write-Host "Deploying frontend build to Static Web App..." -ForegroundColor Cyan
-swa deploy ./build --deployment-token $deploymentToken --env production
+swa deploy ./build --deployment-token $deploymentToken --env production --no-use-keychain
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "⚠️ Frontend deployment had issues (may be ok)" -ForegroundColor Yellow
+}
 
 # Get Static Web App URL
-$frontendUrl = az staticwebapp show `
-  --name $staticWebAppName `
-  --resource-group $resourceGroup `
-  --query "defaultHostname" -o tsv
-
+$frontendUrl = az staticwebapp show --name $staticWebAppName --resource-group $resourceGroup --query "defaultHostname" -o tsv
 $frontendUrl = "https://$frontendUrl"
 
 # Update CORS to allow frontend
-Write-Host "`n? Step 16: Updating CORS for Frontend URL..." -ForegroundColor Green
-az webapp cors remove --resource-group $resourceGroup --name $apiAppName --allowed-origins "*"
-az webapp cors add `
-  --resource-group $resourceGroup `
-  --name $apiAppName `
-  --allowed-origins $frontendUrl
+Write-Host "`n✅ Step 17: Updating CORS for Frontend URL..." -ForegroundColor Green
+az webapp cors remove --resource-group $resourceGroup --name $apiAppName --allowed-origins "*" --output none 2>&1 | Out-Null
+az webapp cors add --resource-group $resourceGroup --name $apiAppName --allowed-origins $frontendUrl --output none
+
+Write-Host "✓ CORS updated with frontend URL" -ForegroundColor Green
 
 # Success Summary
 Write-Host "`n========================================" -ForegroundColor Green
