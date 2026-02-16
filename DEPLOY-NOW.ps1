@@ -8,8 +8,8 @@ Write-Host "========================================" -ForegroundColor Cyan
 
 # Configuration Variables
 $resourceGroup = "rg-campaign-manager"
-$location = "eastus2"  # Changed to West US - often has better quota availability
-$dbServerName = "campaignmanager-db-$(Get-Random -Minimum 1000 -Maximum 9999)"
+$location = "eastus2"
+$dbServerName = "campaignmanager-db"  # Fixed name - no random number
 $dbName = "campaignmanager"
 $dbAdminUser = "adminuser"
 $dbPassword = "CampaignManager2024!"  # Change this to a secure password
@@ -36,27 +36,51 @@ try {
 Write-Host "`n? Step 2: Creating Resource Group..." -ForegroundColor Green
 az group create --name $resourceGroup --location $location --output table
 
-# Create PostgreSQL Flexible Server
-Write-Host "`n? Step 3: Creating PostgreSQL Database (this may take 3-5 minutes)..." -ForegroundColor Green
-az postgres flexible-server create `
-  --resource-group $resourceGroup `
-  --name $dbServerName `
-  --location $location `
-  --admin-user $dbAdminUser `
-  --admin-password $dbPassword `
-  --sku-name Standard_B1ms `
-  --tier Burstable `
-  --version 16 `
-  --storage-size 32 `
-  --public-access 0.0.0.0 `
-  --yes
+# Create PostgreSQL Flexible Server (check if exists first)
+Write-Host "`n✅ Step 3: Checking PostgreSQL Database..." -ForegroundColor Green
+$existingDb = az postgres flexible-server show --resource-group $resourceGroup --name $dbServerName 2>$null
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "PostgreSQL server '$dbServerName' already exists - reusing" -ForegroundColor Yellow
+} else {
+    Write-Host "Creating new PostgreSQL server (this may take 3-5 minutes)..." -ForegroundColor Cyan
+    az postgres flexible-server create `
+      --resource-group $resourceGroup `
+      --name $dbServerName `
+      --location $location `
+      --admin-user $dbAdminUser `
+      --admin-password $dbPassword `
+      --sku-name Standard_B1ms `
+      --tier Burstable `
+      --version 16 `
+      --storage-size 32 `
+      --public-access 0.0.0.0 `
+      --yes
+    
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Failed to create PostgreSQL server" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "✓ PostgreSQL server created" -ForegroundColor Green
+}
 
-# Create Database
-Write-Host "`n? Step 4: Creating Database..." -ForegroundColor Green
-az postgres flexible-server db create `
-  --resource-group $resourceGroup `
-  --server-name $dbServerName `
-  --database-name $dbName
+# Create Database (check if exists first)
+Write-Host "`n✅ Step 4: Checking Database..." -ForegroundColor Green
+$existingDbName = az postgres flexible-server db show --resource-group $resourceGroup --server-name $dbServerName --database-name $dbName 2>$null
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "Database '$dbName' already exists - reusing" -ForegroundColor Yellow
+} else {
+    Write-Host "Creating database '$dbName'..." -ForegroundColor Cyan
+    az postgres flexible-server db create `
+      --resource-group $resourceGroup `
+      --server-name $dbServerName `
+      --database-name $dbName
+    
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Failed to create database" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "✓ Database created" -ForegroundColor Green
+}
 
 # Create App Service Plan
 Write-Host "`n✅ Step 5: Creating App Service Plan (B1 Linux)..." -ForegroundColor Green
@@ -160,6 +184,7 @@ if ($existingStaticApps -and $existingStaticApps.Count -gt 0) {
     Write-Host "Found existing Static Web App: $staticWebAppName - reusing" -ForegroundColor Yellow
 } else {
     # Create new static web app with generated name
+    $staticWebAppName = "campaignmanager-frontend-$(Get-Random -Minimum 1000 -Maximum 9999)"
     Write-Host "Creating new Static Web App: $staticWebAppName..." -ForegroundColor Cyan
     az staticwebapp create --name $staticWebAppName --resource-group $resourceGroup --location "eastus2" --sku Free --output none
     
